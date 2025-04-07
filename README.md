@@ -9,7 +9,7 @@ This project is a **Web-based Retrieval-Augmented Generation (RAG)** tool built 
 
 ## 🚀 Demo
 
-🌐 [Live Web App](https://your-streamlit-cloud-link)  
+🌐 [Live Web App] https://shlassignment-a9eizpcefsh3w42ppdkqrj.streamlit.app/  
 📂 [GitHub Repository] https://github.com/SobhaRachuri
 
 ---
