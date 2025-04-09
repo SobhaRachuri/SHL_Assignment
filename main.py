@@ -2,6 +2,8 @@ import pandas as pd
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List
+import uvicorn
+import os
 
 app = FastAPI()
 
@@ -25,27 +27,19 @@ class Assessment(BaseModel):
 class RecommendResponse(BaseModel):
     recommended_assessments: List[Assessment]
 
-# Welcome/root route
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the SHL Assessment Recommender API!"}
 
-# Health check endpoint
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
 
-# Recommend endpoint
 @app.post("/recommend", response_model=RecommendResponse)
 def recommend_assessments(request: RecommendRequest):
     query = request.query.lower()
+    matching = catalog_df[catalog_df["Assessment Name"].str.lower().str.contains(query)]
 
-    # Search the catalog
-    matching = catalog_df[
-        catalog_df["Assessment Name"].str.lower().str.contains(query)
-    ]
-
-    # If no results
     if matching.empty:
         return RecommendResponse(recommended_assessments=[])
 
@@ -67,10 +61,6 @@ def recommend_assessments(request: RecommendRequest):
 
     return RecommendResponse(recommended_assessments=results[:10])
 
-# Uvicorn setup for deployment
-import uvicorn
-import os
-
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))
+    port = int(os.environ.get("PORT", 10000))  # Default to 10000
     uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
