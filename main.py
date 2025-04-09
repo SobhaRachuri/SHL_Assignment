@@ -8,11 +8,11 @@ app = FastAPI()
 # Load the assessment catalog CSV
 catalog_df = pd.read_csv("shl_assessment_catalog.csv")
 
-# Define the request body model
+# Request model
 class RecommendRequest(BaseModel):
     query: str
 
-# Define the structure of each recommended assessment
+# Individual assessment structure
 class Assessment(BaseModel):
     url: str
     adaptive_support: str
@@ -21,11 +21,11 @@ class Assessment(BaseModel):
     remote_support: str
     test_type: List[str]
 
-# Define the response model
+# Response model
 class RecommendResponse(BaseModel):
     recommended_assessments: List[Assessment]
 
-# Root endpoint to avoid 404 error
+# Welcome/root route
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the SHL Assessment Recommender API!"}
@@ -35,17 +35,19 @@ def read_root():
 def health_check():
     return {"status": "healthy"}
 
-# Recommendation endpoint
+# Recommend endpoint
 @app.post("/recommend", response_model=RecommendResponse)
 def recommend_assessments(request: RecommendRequest):
     query = request.query.lower()
 
+    # Search the catalog
     matching = catalog_df[
         catalog_df["Assessment Name"].str.lower().str.contains(query)
     ]
 
+    # If no results
     if matching.empty:
-        return {"recommended_assessments": []}
+        return RecommendResponse(recommended_assessments=[])
 
     results = []
     for _, row in matching.iterrows():
@@ -63,8 +65,9 @@ def recommend_assessments(request: RecommendRequest):
             test_type=[row["Test Type"]],
         ))
 
-    return {"recommended_assessments": results[:10]}
+    return RecommendResponse(recommended_assessments=results[:10])
 
+# Uvicorn setup for deployment
 import uvicorn
 import os
 
